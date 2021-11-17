@@ -12,10 +12,10 @@ import {
   getModelSchemaRef, param, patch, post, put, requestBody,
   response
 } from '@loopback/rest';
+import axios from 'axios';
 import {Usuario} from '../models';
 import {UsuarioRepository} from '../repositories';
 import {AuthService} from '../services';
-import axios from 'axios';
 
 export class UsuarioController {
   constructor(
@@ -50,9 +50,9 @@ export class UsuarioController {
     let claveCifrada = this.servicioAuth.CifrarClave(clave);
     usuario.password = claveCifrada;
     let p = await this.usuarioRepository.create(usuario);
-// Notificamos al usuario por correo
+    // Notificamos al usuario por correo
     let destino = usuario.correo;
-// Notifiamos al usuario por telefono y cambiar la url por send_sms
+    // Notifiamos al usuario por telefono y cambiar la url por send_sms
     // let destino = usuario.telefono;
 
     let asunto = 'Registro de usuario en plataforma';
