@@ -1,4 +1,4 @@
-import {injectable, /* inject, */ BindingScope} from '@loopback/core';
+import { /* inject, */ BindingScope, injectable} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {config} from '../config/config';
 import {Usuario} from '../models';
@@ -12,7 +12,7 @@ const jwt = require('jsonwebtoken');
 @injectable({scope: BindingScope.TRANSIENT})
 export class AuthService {
   constructor(@repository(UsuarioRepository)
-  public usuarioRepository: UsuarioRepository) {}
+  public usuarioRepository: UsuarioRepository) { }
 
   /*
    * Add service methods here
@@ -51,7 +51,7 @@ export class AuthService {
     }
   }
 
- //Autenticacion
+  //Autenticacion
   IdentificarPersona(correo: string, password: string) {
     try {
       let p = this.usuarioRepository.findOne({where: {correo: correo, password: password}})

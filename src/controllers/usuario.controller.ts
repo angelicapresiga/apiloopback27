@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {service} from '@loopback/core';
 import {
   Count,
@@ -9,14 +10,14 @@ import {
 } from '@loopback/repository';
 import {
   del, get,
-  getModelSchemaRef, param, patch, post, put, requestBody,
+  getModelSchemaRef, HttpErrors, param, patch, post, put, requestBody,
   response
 } from '@loopback/rest';
 import axios from 'axios';
-import {Usuario} from '../models';
+import {Credenciales, Usuario} from '../models';
 import {UsuarioRepository} from '../repositories';
 import {AuthService} from '../services';
-
+@authenticate("admin")
 export class UsuarioController {
   constructor(
     @repository(UsuarioRepository)
@@ -25,7 +26,7 @@ export class UsuarioController {
     public servicioAuth: AuthService
   ) { }
 
-  @post('/yes')
+  @post('/usuarios')
   @response(200, {
     description: 'Usuario model instance',
     content: {'application/json': {schema: getModelSchemaRef(Usuario)}},
@@ -79,7 +80,7 @@ export class UsuarioController {
     return p;
   }
 
-  @get('/yes/count')
+  @get('/usuarios/count')
   @response(200, {
     description: 'Usuario model count',
     content: {'application/json': {schema: CountSchema}},
@@ -90,7 +91,7 @@ export class UsuarioController {
     return this.usuarioRepository.count(where);
   }
 
-  @get('/yes')
+  @get('/usuarios')
   @response(200, {
     description: 'Array of Usuario model instances',
     content: {
@@ -108,7 +109,7 @@ export class UsuarioController {
     return this.usuarioRepository.find(filter);
   }
 
-  @patch('/yes')
+  @patch('/usuarios')
   @response(200, {
     description: 'Usuario PATCH success count',
     content: {'application/json': {schema: CountSchema}},
@@ -127,7 +128,7 @@ export class UsuarioController {
     return this.usuarioRepository.updateAll(usuario, where);
   }
 
-  @get('/yes/{id}')
+  @get('/usuarios/{id}')
   @response(200, {
     description: 'Usuario model instance',
     content: {
@@ -143,7 +144,7 @@ export class UsuarioController {
     return this.usuarioRepository.findById(id, filter);
   }
 
-  @patch('/yes/{id}')
+  @patch('/usuarios/{id}')
   @response(204, {
     description: 'Usuario PATCH success',
   })
@@ -161,7 +162,7 @@ export class UsuarioController {
     await this.usuarioRepository.updateById(id, usuario);
   }
 
-  @put('/yes/{id}')
+  @put('/usuarios/{id}')
   @response(204, {
     description: 'Usuario PUT success',
   })
@@ -172,11 +173,44 @@ export class UsuarioController {
     await this.usuarioRepository.replaceById(id, usuario);
   }
 
-  @del('/yes/{id}')
+  @del('/usuarios/{id}')
   @response(204, {
     description: 'Usuario DELETE success',
   })
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.usuarioRepository.deleteById(id);
   }
+  //Servicio de login
+  @authenticate.skip()
+  @post('/login', {
+    responses: {
+      '200': {
+        description: 'Identificación de usuarios'
+      }
+    }
+  })
+  async login(
+    @requestBody() credenciales: Credenciales
+  ) {
+    let p = await this.servicioAuth.IdentificarPersona(credenciales.usuario, credenciales.password);
+    if (p) {
+      let token = this.servicioAuth.GenerarTokenJWT(p);
+
+      return {
+        status: "success",
+        data: {
+          nombre: p.nombre,
+          apellidos: p.apellidos,
+          correo: p.correo,
+          id: p.id
+        },
+        token: token
+      }
+    } else {
+      throw new HttpErrors[401]("Datos invalidos")
+    }
+  }
+
+
+
 }
