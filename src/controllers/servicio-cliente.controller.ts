@@ -11,7 +11,8 @@ import {
   Cliente,
 } from '../models';
 import {ServicioRepository} from '../repositories';
-
+import {authenticate} from '@loopback/authentication';
+@authenticate("admin")
 
 export class ServicioClienteController {
   constructor(
